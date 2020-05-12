@@ -19,6 +19,24 @@ app.use(bodyParser.json())
 
 app.use(cors())
 
+const readContacts = async (req, res) => {
+    const { dir, contacts } = req.body
+    client.setID(dir)
+    let newContacts = []
+    for (let contact of contacts) {
+        try {
+            let { data } = await client.readCoils(contact.In, 1)
+            let newValue = { ...contact, value: data[0] }
+            newContacts = [...newContacts, newValue]
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    res.json(newContacts)
+
+}
+
 app.route('/Datos')
     .get((req, res) => {
         res.json(Data)
@@ -29,18 +47,7 @@ app.route('/Datos')
     })
 
 app.route('/ControlNodo')
-    .get(async (req, res) => {
-        const { dir, contacts } = req.body
-        client.setID(dir)
-        let newContacts = []
-        for (let contact of contacts) {
-            let { data } = await client.readCoils(contact.In, 1)
-            let newValue = { ...contact, value: data[0] }
-            newContacts = [...newContacts, newValue]
-        }
-        res.json(newContacts)
-
-    })
+    .get(readContacts)
     .post((req, res) => {
 
         const { dir, In, Out, value } = req.body
@@ -50,6 +57,19 @@ app.route('/ControlNodo')
             .then(data => res.json(data))
             .catch(error => res.send(error))
     })
+
+app.route('/Emergencia').post(async (req, res) => {
+    const { dir, contacts } = req.body
+    client.setID(dir)
+    for (let contact of contacts) {
+        try {
+            await client.writeCoil(contact.Out, false)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    readContacts(req,res)
+})
 
 app.listen(port, () => console.log(`Example app listening at port ${port}`))
 
