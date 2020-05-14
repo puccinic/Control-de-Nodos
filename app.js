@@ -20,9 +20,27 @@ app.use(bodyParser.json())
 app.use(cors())
 
 const readContacts = async (req, res) => {
-    const { dir, contacts } = req.body
+    const { id } = req.query || req.body
+    const { dir, contacts } = Data.find(e => e.id == id)
+    if (!dir) {
+        res.json({ message: 'El nodo no tiene una dirección asignada' })
+        return
+    }
+
+    if (!contacts.length) {
+        res.json({ message: 'El nodo no tiene contactores asociados' })
+        return
+    }
+
+
     client.setID(dir)
     let newContacts = []
+
+    if (!contacts) {
+        res.json({ message: 'No hay contactores asignados a este nodo' })
+        return
+    }
+
     for (let contact of contacts) {
         try {
             let { data } = await client.readCoils(contact.In, 1)
@@ -30,10 +48,15 @@ const readContacts = async (req, res) => {
             newContacts = [...newContacts, newValue]
 
         } catch (error) {
-            console.log(error)
+            res.json(error)
+            return
         }
     }
-    res.json(newContacts)
+    res.json({
+        id: id,
+        dir: dir,
+        contacts: newContacts
+    })
 
 }
 
@@ -54,12 +77,13 @@ app.route('/ControlNodo')
         client.setID(dir)
         client.writeCoil(Out, value)
             .then(() => client.readCoils(In, 1))
-            .then(data => res.json(data))
+            .then(obj => res.json({ value: obj.data[0], message: 'funciona' }))
             .catch(error => res.send(error))
     })
 
 app.route('/Emergencia').post(async (req, res) => {
-    const { dir, contacts } = req.body
+    const { id } = req.body
+    const { dir, contacts } = Data.find(e => e.id == id)
     client.setID(dir)
     for (let contact of contacts) {
         try {
@@ -68,7 +92,7 @@ app.route('/Emergencia').post(async (req, res) => {
             console.log(error)
         }
     }
-    readContacts(req,res)
+    res.send('done')
 })
 
 app.listen(port, () => console.log(`Example app listening at port ${port}`))
