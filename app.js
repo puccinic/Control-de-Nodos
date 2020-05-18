@@ -1,15 +1,17 @@
 'use strict'
 const exprress = require('express')
 const cors = require('cors')
-let Data = require('./Data.js').data
+const fs = require('fs');
 const bodyParser = require('body-parser')
 const ModbusRTU = require('modbus-serial')
+let Data = require('./Data.json')
 const app = exprress()
 const port = 4000
 const client = new ModbusRTU()
 
 client.connectRTUBuffered('COM1', { baudRate: 9600, parity: 'none', dataBits: 8, stopBits: 1 })
     .then(() => console.log('Conexión exitosa'))
+    .then(() => client.setTimeout(1000))
     .catch(console.log)
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -66,7 +68,14 @@ app.route('/Datos')
     })
     .post((req, res) => {
         Data = req.body
-        res.json('Cambios guardados satisfactoriamente')
+        fs.writeFile('./Data.json', JSON.stringify(Data),err => {
+            if (err) {
+                console.log('Error writing file', err)
+                res.json('Hubo un error guardando cambios')
+            } else {
+                res.json('Cambios guardados satisfactoriamente')
+            }
+        });
     })
 
 app.route('/ControlNodo')
