@@ -25,12 +25,12 @@ const readContacts = async (req, res) => {
     const { id } = req.query || req.body
     const { dir, contacts } = Data.find(e => e.id == id)
     if (!dir) {
-        res.json({ message: 'El nodo no tiene una dirección asignada' })
+        res.json({ message: 'El nodo no tiene una dirección asignada.' })
         return
     }
 
     if (!contacts.length) {
-        res.json({ message: 'El nodo no tiene contactores asociados' })
+        res.json({ message: 'El nodo no tiene contactores asociados.' })
         return
     }
 
@@ -66,9 +66,9 @@ app.route('/Datos')
         fs.writeFile('./Data.json', JSON.stringify(Data),err => {
             if (err) {
                 console.log('Error writing file', err)
-                res.json('Hubo un error guardando cambios')
+                res.json('Hubo un error al intentar guardar los cambios.')
             } else {
-                res.json('Cambios guardados satisfactoriamente')
+                res.json('Cambios guardados satisfactoriamente.')
             }
         });
     })
