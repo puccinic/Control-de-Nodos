@@ -38,11 +38,6 @@ const readContacts = async (req, res) => {
     client.setID(dir)
     let newContacts = []
 
-    if (!contacts) {
-        res.json({ message: 'No hay contactores asignados a este nodo' })
-        return
-    }
-
     for (let contact of contacts) {
         try {
             let { data } = await client.readCoils(contact.In, 1)
