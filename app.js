@@ -45,6 +45,8 @@ const readContacts = async (req, res) => {
             newContacts = [...newContacts, newValue]
 
         } catch (error) {
+            if (error.message === 'Timed out') error.message = 'No se pudo establecer conexión con el tablero.'
+            if (error.message === 'Port Not Open') error.message = 'La Raspberry no está conectada al bus.'
             res.json(error)
             return
         }
@@ -81,7 +83,10 @@ app.route('/ControlNodo')
         client.setID(dir)
         client.writeCoil(Out, value)
             .then(() => client.readCoils(In, 1))
-            .then(obj => res.json({ value: obj.data[0], message: 'funciona' }))
+            .then(obj => {
+                if (obj.data[0] === value) res.json({ value: obj.data[0], message: 'funciona' })
+                else res.json({ value: obj.data[0], message: 'Hubo un error accionando el contactor.' })
+            })
             .catch(error => res.send(error))
     })
 
@@ -89,14 +94,21 @@ app.route('/Emergencia').post(async (req, res) => {
     const { id } = req.body
     const { dir, contacts } = Data.find(e => e.id == id)
     client.setID(dir)
+    let stuckedContacts = []
+
     for (let contact of contacts) {
         try {
             await client.writeCoil(contact.Out, false)
+            let obj =  await client.readCoils(contact.In,1)
+            if (!obj.data[0]) stuckedContacts.push(contact) 
+
         } catch (error) {
             console.log(error)
         }
     }
-    res.send('done')
+
+    if(!stuckedContacts.length) res.json('done')
+    else res.json(stuckedContacts)
 })
 
 app.listen(port, () => console.log(`Example app listening at port ${port}`))
