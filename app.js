@@ -107,7 +107,7 @@ app.route('/Emergencia').post(async (req, res) => {
         }
     }
 
-    if(!stuckedContacts.length) res.json('done')
+    if(stuckedContacts.length) res.json('done')
     else res.json(stuckedContacts)
 })
 
