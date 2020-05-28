@@ -7,9 +7,11 @@ const ModbusRTU = require('modbus-serial')
 let Data = require('./Data.json')
 const app = exprress()
 const port = 4000
+
+const SERIAL_PORT = process.argv[2]
 const client = new ModbusRTU()
 
-client.connectRTUBuffered('COM1', { baudRate: 9600, parity: 'none', dataBits: 8, stopBits: 1 })
+client.connectRTUBuffered(SERIAL_PORT, { baudRate: 9600, parity: 'none', dataBits: 8, stopBits: 1 })
     .then(() => console.log('Conexión exitosa'))
     .then(() => client.setTimeout(1000))
     .catch(console.log)
