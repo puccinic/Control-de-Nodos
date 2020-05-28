@@ -1,5 +1,5 @@
 {
-  "name": "proyecto-final",
+  "name": "Control-de-Nodos",
   "version": "1.0.0",
   "description": "Simula sistema de control descentralizado",
   "main": "app.js",
