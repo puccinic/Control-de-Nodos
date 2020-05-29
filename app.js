@@ -54,7 +54,7 @@ const readContacts = async (req, res) => {
 
         } catch (error) {
             if (error.message === 'Timed out') error.message = 'No se pudo establecer conexión con el tablero.'
-            if (error.message === 'Port Not Open') error.message = 'La Raspberry no está conectada al bus.'
+            if (error.message === 'Port Not Open') error.message = 'El Ordenador no está conectada al bus.'
             res.json(error)
             return
         }
