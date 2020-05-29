@@ -8,8 +8,14 @@ let Data = require('./Data.json')
 const app = exprress()
 const port = 4000
 
-const SERIAL_PORT = process.argv[2]
 const client = new ModbusRTU()
+
+const SERIAL_PORT = process.argv[2]
+
+const READ_VALIDATION = (address, length) =>  {
+    if (process.argv[3] === 'SIM') return client.readCoils(address, length)  
+    else  return client.readDiscreteInputs(address, length)
+}
 
 client.connectRTUBuffered(SERIAL_PORT, { baudRate: 9600, parity: 'none', dataBits: 8, stopBits: 1 })
     .then(() => console.log('Conexión exitosa'))
@@ -42,7 +48,7 @@ const readContacts = async (req, res) => {
 
     for (let contact of contacts) {
         try {
-            let { data } = await client.readCoils(contact.In, 1)
+            let { data } = await READ_VALIDATION(contact.In, 1)
             let newValue = { ...contact, value: data[0] }
             newContacts = [...newContacts, newValue]
 
@@ -67,7 +73,7 @@ app.route('/Datos')
     })
     .post((req, res) => {
         Data = req.body
-        fs.writeFile('./Data.json', JSON.stringify(Data),err => {
+        fs.writeFile('./Data.json', JSON.stringify(Data), err => {
             if (err) {
                 console.log('Error writing file', err)
                 res.json('Hubo un error al intentar guardar los cambios.')
@@ -84,7 +90,7 @@ app.route('/ControlNodo')
         const { dir, In, Out, value } = req.body
         client.setID(dir)
         client.writeCoil(Out, value)
-            .then(() => client.readCoils(In, 1))
+            .then(() => READ_VALIDATION(In, 1))
             .then(obj => {
                 if (obj.data[0] === value) res.json({ value: obj.data[0], message: 'funciona' })
                 else res.json({ value: obj.data[0], message: 'Hubo un error accionando el contactor.' })
@@ -101,15 +107,15 @@ app.route('/Emergencia').post(async (req, res) => {
     for (let contact of contacts) {
         try {
             await client.writeCoil(contact.Out, false)
-            let obj =  await client.readCoils(contact.In,1)
-            if (!obj.data[0]) stuckedContacts.push(contact) 
+            let obj = await READ_VALIDATION(contact.In, 1)
+            if (!obj.data[0]) stuckedContacts.push(contact)
 
         } catch (error) {
             console.log(error)
         }
     }
 
-    if(stuckedContacts.length) res.json('done')
+    if (stuckedContacts.length) res.json('done')
     else res.json(stuckedContacts)
 })
 
