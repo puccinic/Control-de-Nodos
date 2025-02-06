@@ -1,0 +1,6 @@
+# Design and implementation of a decentralized drive and monitoring system for UniGRID nodes
+At Universidad del Norte there is a laboratory that emulates a power system called UniGRID. This project seeks to design a decentralized node control system for UniGRID, as a control system focused on a single PLC was previously ruled out due to the drawbacks described in the report. The design of the system seeks to achieve the objectives and comply with the constraints and design requirements proposed by the advisors. To do this, the Methodology and selection criteria described in the report are applied. The system, which is designed, consists of the implementation of an RS485 network that communicates slave devices, which control the UniGRID nodes, with a master device that hosts an application. An application is developed and allows the interaction with the user and the UniGRID. The application is tested by using software that emulates the behavior of the RS485 network and slave devices. Finally, a fault analysis is done following the DFMEA strategy and the successful operation of the application and system is completed.
+
+## Authors: Carlos Rueda, Carlos Vergara
+## Publishing Date: 10.06.2020
+## URL: http://hdl.handle.net/10584/9178
